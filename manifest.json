@@ -1,14 +1,11 @@
 {
     "manifest_version": 2,
     "name": "TST Colored Tabs",
+    "short_name": "TSTColoredTabs",
+    "description": "Colorize tabs in Tree Style Tab based on hostname.",
     "version": "0.1",
-
-    "developer": {
-        "name": "Alexey Murz Korepov",
-        "url": "https://github.com/MurzNN/tst-colored-tabs"
-    },
-
-    "description": "Colorize tabs in Tree Style Tab randomly or based on domain.",
+    "author": "Alexey Murz Korepov",
+    "homepage_url": "https://github.com/MurzNN/tst-colored-tabs",
 
     "applications": {
         "gecko": {
@@ -18,7 +15,8 @@
 
     "permissions": [
         "tabs",
-        "storage"
+        "storage",
+        "<all_urls>"
     ],
 
     "background": {
@@ -28,7 +26,7 @@
     },
 
     "options_ui": {
-        "page": "options/options.html",
+        "page": "options.html",
         "browser_style": true
     }
 }
