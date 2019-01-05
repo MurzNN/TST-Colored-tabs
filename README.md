@@ -1,21 +1,14 @@
 # TST Colored Tabs
 
-This plugin for [Tree Style Tab] that add background colors to tabs based on domain.
+`TST Colored Tabs` is Mozilla Firefox addon, that add colored background to each tab based on current tab domain, so all opened tabs with same domain have same color background in list for easier tab navigation.
 
-## Build
+Need [Tree Style Tab] extension installed for work. 
+After installing `TST Colored tabs` - simply close and open `Tree Style Tab` sidebar for activate it to new tabs, or restart browser.
 
-The add-on can be built using `web-ext`:
-
-```sh
-web-ext build
-```
-
-This creates an unsigned add-on. To build a signed version, you have to change
-the add-on id and submit the add-on to [Mozilla Add-ons][amo] for signing.
+Idea is based on ColorfulTabs addon, that not works with Tree Style Tab.
 
 ## Licence
 
 This add-on by Alexey Murz Korepov is licenced under the terms of the GPLv3.
 
 [Tree Style Tab]: https://addons.mozilla.org/firefox/addon/tree-style-tab/
-[amo]: https://addons.mozilla.org/
