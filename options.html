@@ -7,13 +7,34 @@
 
   <body>
 
-    <form>
-        <table>
-        <tr><td><label>Saturation</label></td><td><input type="text" id="saturation" ></td></tr>
-        <tr><td><label>Lightness</label></td><td><input type="text" id="lightness" ></td></tr>
-      </table>
-    </form>
-    <p><strong>Changes need a browser restart.</strong></p>
+    <section class="preferences">
+      <h3 class="title" >Settings for all tabs</h3>
+      <div><label>Saturation: <input id="saturation" type="text" size=2/></label></div>
+      <div><label>Lightness: <input id="lightness" type="text" size=2/></label></div>
+      <div><label>Custom CSS for colored tab:<br/>
+        <textarea id="css" rows="2" cols="50"></textarea>
+      </label></div>
+      
+      <h3 class="title" >Active tab</h3>
+      <div><label>Saturation: <input id="active-saturation" type="text" size=2/></label></div>
+      <div><label>Lightness: <input id="active-lightness" type="text" size=2/></label></div>
+      <div><label>Custom CSS for active tab:<br/>
+        <textarea id="active-css" rows="2" cols="50"></textarea>
+      </label></div>
+      
+      <h3 class="title" >Hovered tab</h3>
+      <div><label>Saturation: <input id="hover-saturation" type="text" size=2/></label></div>
+      <div><label>Lightness: <input id="hover-lightness" type="text" size=2/></label></div>
+      <div><label>Custom CSS for hovered tab:<br/>
+        <textarea id="hover-css" rows="2" cols="50"></textarea>
+      </label></div>
+
+    </section>
+
+    <input type="button" value="Save preferences" id="save-button"/>
+    <input type="button" value="Reset to defaults" id="reset-button"/>
+
+    <script src="background.js"></script>
     <script src="options.js"></script>
 
   </body>
