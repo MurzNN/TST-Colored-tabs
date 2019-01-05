@@ -1,3 +1,12 @@
+Changes in [0.4] (2019-01-06)
+============================================================================================
+
+ * Added used colors count for improve performance and exclude using similar colors.
+
+ * Optimized and speed-up CSS rules applying process.
+
+ * Removed custom CSS fields from settings, this already exists in Tree Style Tab options.
+
 Changes in [0.3] (2019-01-05)
 ============================================================================================
 

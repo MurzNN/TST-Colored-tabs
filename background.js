@@ -5,33 +5,33 @@ const TST_ID = "treestyletab@piro.sakura.ne.jp";
 const DEFAULT_SETTINGS = {
   saturation: 60,
   lightness: 70,
-  css: '',
+  colors: 15,
   active: {
     saturation: 60,
     lightness: 60,
-    css: 'font-weight: bold;',
+    bold: true,
   },
   hover: {
     saturation: 60,
     lightness: 65,
-    css: '',
   },
 };
 
 var ColoredTabs = {
     init() {
-      ColoredTabs.state.inited = true;
       browser.storage.sync.get(DEFAULT_SETTINGS).then(function(settings) {
+//         console.log('init settings');
         ColoredTabs.settings = settings;
-        ColoredTabs.state.hashUsed = [];
         ColoredTabs.colorizeAllTabs();
         browser.tabs.onUpdated.addListener(ColoredTabs.checkTabChanges);
         browser.tabs.onCreated.addListener(ColoredTabs.handleCreated);
+        ColoredTabs.state.inited = true;
+//         console.log('init settings fin');
       });
     },
     
     handleCreated(tab) {
-      console.log("tab url " + tab.url);
+//       console.log("tab url " + tab.url);
       if(tab.url.indexOf('about:') === 0)
         return;
       let host = new URL(tab.url);
@@ -40,89 +40,61 @@ var ColoredTabs = {
     },
     
     checkTabChanges(tabId, changeInfo, tab) {
-      if(typeof changeInfo.url === 'undefined') {
-       return;
-      }
+      if(typeof changeInfo.url === 'undefined' || tab.url.indexOf('about:') === 0)
+        return;
       let host = new URL(tab.url);
       host = host.hostname.toString();
       ColoredTabs.colorizeTab(tabId, host);
     },
     
     colorizeAllTabs() {
-      ColoredTabs.state.css = '';
-      if(ColoredTabs.settings.active.css !== '') {
-        ColoredTabs.state.css = ColoredTabs.state.css + `
-        .tab.active {
-        ` + ColoredTabs.settings.active.css + `
-        }
-        `;
+//       console.log('colorizeAllTabs() start');
+      let css = '';
+      if(ColoredTabs.settings.active.bold == true) {
+        css += '.tab.active .label{font-weight:bold}';
       }
-      if(ColoredTabs.settings.hover.css !== '') {
-        ColoredTabs.state.css = ColoredTabs.state.css + `
-        .tab:hover {
-        ` + ColoredTabs.settings.hover.css + `
-        }
-        `;
+      for(let i = 0; i < 360; i += (360 / ColoredTabs.settings.colors)) {
+        let hue = Math.round(i);
+        css += `
+.tab.coloredTabsHue` + hue + ` {background-color: hsl(` + hue + `,` + ColoredTabs.settings.saturation + `%,` + ColoredTabs.settings.lightness + `%);}
+.tab.coloredTabsHue` + hue + `.active {background-color: hsl(` + hue + `,` + ColoredTabs.settings.active.saturation + `%,` + ColoredTabs.settings.active.lightness + `%);}
+.tab.coloredTabsHue` + hue + `:hover {background-color: hsl(` + hue + `,` + ColoredTabs.settings.hover.saturation + `%,` + ColoredTabs.settings.hover.lightness + `%);}`;
       }
+//       console.log(css);
+     
       browser.runtime.sendMessage(TST_ID, {
           type: "register-self",
-          style: ColoredTabs.state.css,
+          style: css,
       });
       
       browser.tabs.query({}).then(function(tabs){
         for (let tab of tabs) {
           let host = new URL(tab.url);
           host = host.hostname.toString();
-          console.log('colorize tab id ' + tab.id + ' host ' + host);
+//           console.log('colorize tab id ' + tab.id + ' host ' + host);
           ColoredTabs.colorizeTab(tab.id, host);
         }
       }, onError);
-      console.log('colorizeAllTabs() fin');
     },
     
-    colorizeTab(tabId, host, oldHost = null) {
-      console.log("colorizeTab tabId " + tabId + ", host " + host);
-      let hash = ColoredTabs.hash(host) % 360;
+    colorizeTab(tabId, host) {
+      let hue = Math.round((ColoredTabs.hash(host) % ColoredTabs.settings.colors) * (360 / ColoredTabs.settings.colors));
+//       console.log("colorizeTab tabId " + tabId + ", host " + host + " hash " + ColoredTabs.hash(host) + " step " + (ColoredTabs.hash(host) % ColoredTabs.settings.colors) + " hue " + hue);
       
-      if(typeof ColoredTabs.state.tabHash[tabId] !== 'undefined') {
+      if(typeof ColoredTabs.state.tabHue[tabId] !== 'undefined') {
         browser.runtime.sendMessage(TST_ID, {
           type:  'remove-tab-state',
           tabs:  [tabId],
-          state: 'coloredTabs' + ColoredTabs.state.tabHash[tabId],
-        });
-      }
-      
-      if(typeof ColoredTabs.state.hashUsed[hash] === 'undefined') {
-      
-        ColoredTabs.state.hashUsed[hash] = true;
-        let hashColor = 'hsl(' + hash + ',' + ColoredTabs.settings.saturation + '%,' + ColoredTabs.settings.lightness + '%)';
-        let hashColorHover = 'hsl(' + hash + ',' + ColoredTabs.settings.hover.saturation + '%,' + ColoredTabs.settings.hover.lightness + '%)';
-        let hashColorActive = 'hsl(' + hash + ',' + ColoredTabs.settings.active.saturation + '%,' + ColoredTabs.settings.active.lightness + '%)';
-        
-        ColoredTabs.state.css = ColoredTabs.state.css + `
-          .tab.coloredTabs` + hash + ` {
-            background-color: ` + hashColor + `;
-          }
-          .tab.coloredTabs` + hash + `:hover {
-            background-color: ` + hashColorHover + `;
-          }
-          .tab.coloredTabs` + hash + `.active {
-            background-color: ` + hashColorActive + `;
-          }
-          `;
-
-        browser.runtime.sendMessage(TST_ID, {
-          type: "register-self",
-          style: ColoredTabs.state.css,
+          state: 'coloredTabsHue' + ColoredTabs.state.tabHue[tabId],
         });
       }
       
       browser.runtime.sendMessage(TST_ID, {
         type:  'add-tab-state',
         tabs:  [tabId],
-        state: 'coloredTabs' + hash,
+        state: 'coloredTabsHue' + hue,
       });
-      ColoredTabs.state.tabHash[tabId] = hash;
+      ColoredTabs.state.tabHue[tabId] = hue;
     },
     
     hash(s) {
@@ -132,8 +104,7 @@ var ColoredTabs = {
     },
     
     state: {
-      'hashUsed': {},
-      'tabHash': {},
+      'tabHue': {},
       'inited': false,
     },
 }
@@ -169,10 +140,10 @@ async function handleTSTMessage(message, sender) {
           registerToTST();
         case "sidebar-show":
           if(ColoredTabs.state.inited != true) {
-            console.log('TST ready, initializing ColoredTabs');
+//             console.log('TST ready, initializing ColoredTabs');
             ColoredTabs.init();
           } else {
-            console.log('ColoredTabs already inited');
+//             console.log('ColoredTabs already inited');
             ColoredTabs.colorizeAllTabs();
           }
           break;

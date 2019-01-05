@@ -11,27 +11,22 @@
       <h3 class="title" >Settings for all tabs</h3>
       <div><label>Saturation: <input id="saturation" type="text" size=2/></label></div>
       <div><label>Lightness: <input id="lightness" type="text" size=2/></label></div>
-      <div><label>Custom CSS for colored tab:<br/>
-        <textarea id="css" rows="2" cols="50"></textarea>
-      </label></div>
+      <div><label>Number of colors: <input id="colors" type="text" size=2/></label>
+      <div class="description">Number of color hues used, maximum is 360, recommended is 15.</div>
+      </div>
       
       <h3 class="title" >Active tab</h3>
       <div><label>Saturation: <input id="active-saturation" type="text" size=2/></label></div>
       <div><label>Lightness: <input id="active-lightness" type="text" size=2/></label></div>
-      <div><label>Custom CSS for active tab:<br/>
-        <textarea id="active-css" rows="2" cols="50"></textarea>
-      </label></div>
+      <div><label><input id="active-bold" type="checkbox"/> Force <strong>bold</strong> text for active tab</label></div>
       
       <h3 class="title" >Hovered tab</h3>
       <div><label>Saturation: <input id="hover-saturation" type="text" size=2/></label></div>
       <div><label>Lightness: <input id="hover-lightness" type="text" size=2/></label></div>
-      <div><label>Custom CSS for hovered tab:<br/>
-        <textarea id="hover-css" rows="2" cols="50"></textarea>
-      </label></div>
 
     </section>
 
-    <input type="button" value="Save preferences" id="save-button"/>
+    <input type="button" value="Save and apply settings" id="save-button"/>
     <input type="button" value="Reset to defaults" id="reset-button"/>
 
     <script src="background.js"></script>
