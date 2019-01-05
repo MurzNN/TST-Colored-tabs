@@ -10,6 +10,7 @@
     "applications": {
         "gecko": {
             "id": "tst-colored-tabs@murz"
+            "strict_min_version": "57.0",
         }
     },
 
