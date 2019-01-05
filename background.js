@@ -20,14 +20,23 @@ const DEFAULT_SETTINGS = {
 
 var ColoredTabs = {
     init() {
+      ColoredTabs.state.inited = true;
       browser.storage.sync.get(DEFAULT_SETTINGS).then(function(settings) {
         ColoredTabs.settings = settings;
         ColoredTabs.state.hashUsed = [];
         ColoredTabs.colorizeAllTabs();
         browser.tabs.onUpdated.addListener(ColoredTabs.checkTabChanges);
-        console.log("colorizeTab inited");
-        ColoredTabs.state.inited = true;
+        browser.tabs.onCreated.addListener(ColoredTabs.handleCreated);
       });
+    },
+    
+    handleCreated(tab) {
+      console.log("tab url " + tab.url);
+      if(tab.url.indexOf('about:') === 0)
+        return;
+      let host = new URL(tab.url);
+      host = host.hostname.toString();
+      ColoredTabs.colorizeTab(tab.id, host);
     },
     
     checkTabChanges(tabId, changeInfo, tab) {
@@ -72,7 +81,7 @@ var ColoredTabs = {
     },
     
     colorizeTab(tabId, host, oldHost = null) {
-      
+      console.log("colorizeTab tabId " + tabId + ", host " + host);
       let hash = ColoredTabs.hash(host) % 360;
       
       if(typeof ColoredTabs.state.tabHash[tabId] !== 'undefined') {
@@ -129,10 +138,46 @@ var ColoredTabs = {
     },
 }
 
-if(ColoredTabs.state.inited != true) {
-  ColoredTabs.init();
-}
-
 function onError(error) {
   console.log(`Error: ${error}`);
 }
+
+async function registerToTST() {
+    try {
+      const self = await browser.management.getSelf();
+      await browser.runtime.sendMessage(TST_ID, {
+        type: "register-self",
+        name: self.id,
+        listeningTypes: ["ready", "sidebar-hide", "sidebar-show"],
+      });
+    } catch(e) {
+      // Could not register
+      console.log("Tree Style Tab extension needed for TST Colored Tabs, but can't be detected. Please install or enable it.")
+      return false;
+    }
+
+    return true;
+}
+
+async function handleTSTMessage(message, sender) {
+    if(sender.id !== TST_ID) {
+        return;
+    }
+    
+    switch (message.type) {
+        case "ready":
+          registerToTST();
+        case "sidebar-show":
+          if(ColoredTabs.state.inited != true) {
+            console.log('TST ready, initializing ColoredTabs');
+            ColoredTabs.init();
+          } else {
+            console.log('ColoredTabs already inited');
+            ColoredTabs.colorizeAllTabs();
+          }
+          break;
+    }
+}
+
+registerToTST();
+browser.runtime.onMessageExternal.addListener(handleTSTMessage);
