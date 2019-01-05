@@ -81,20 +81,21 @@ var ColoredTabs = {
       let hue = Math.round((ColoredTabs.hash(host) % ColoredTabs.settings.colors) * (360 / ColoredTabs.settings.colors));
 //       console.log("colorizeTab tabId " + tabId + ", host " + host + " hash " + ColoredTabs.hash(host) + " step " + (ColoredTabs.hash(host) % ColoredTabs.settings.colors) + " hue " + hue);
       
-      if(typeof ColoredTabs.state.tabHue[tabId] !== 'undefined') {
+      if(ColoredTabs.state.tabHue[tabId] != hue) {
         browser.runtime.sendMessage(TST_ID, {
-          type:  'remove-tab-state',
+          type:  'add-tab-state',
           tabs:  [tabId],
-          state: 'coloredTabsHue' + ColoredTabs.state.tabHue[tabId],
+          state: 'coloredTabsHue' + hue,
         });
+        if(typeof ColoredTabs.state.tabHue[tabId] !== 'undefined') {
+          browser.runtime.sendMessage(TST_ID, {
+            type:  'remove-tab-state',
+            tabs:  [tabId],
+            state: 'coloredTabsHue' + ColoredTabs.state.tabHue[tabId],
+          });
+        }
+        ColoredTabs.state.tabHue[tabId] = hue;
       }
-      
-      browser.runtime.sendMessage(TST_ID, {
-        type:  'add-tab-state',
-        tabs:  [tabId],
-        state: 'coloredTabsHue' + hue,
-      });
-      ColoredTabs.state.tabHue[tabId] = hue;
     },
     
     hash(s) {
