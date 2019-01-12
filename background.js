@@ -24,29 +24,39 @@ var ColoredTabs = {
         ColoredTabs.settings = settings;
         ColoredTabs.colorizeAllTabs();
         browser.tabs.onUpdated.addListener(ColoredTabs.checkTabChanges);
-        browser.tabs.onCreated.addListener(ColoredTabs.handleCreated);
+        browser.tabs.onRemoved.addListener(ColoredTabs.removeTabInfo)
+//         browser.tabs.onCreated.addListener(ColoredTabs.handleCreated);
         ColoredTabs.state.inited = true;
 //         console.log('init settings fin');
       });
     },
     
-    handleCreated(tab) {
-//       console.log("tab url " + tab.url);
-      if(tab.url.indexOf('about:') === 0)
-        return;
-      let host = new URL(tab.url);
-      host = host.hostname.toString();
-      ColoredTabs.colorizeTab(tab.id, host);
-    },
+//     handleCreated(tab) {
+//       console.log("handleCreated tab id " + tab.id + " tab url " + tab.url);
+//       if(tab.url.indexOf('about:') === 0)
+//         return;
+//       let host = new URL(tab.url);
+//       host = host.hostname.toString();
+//       ColoredTabs.colorizeTab(tab.id, host);
+//     },
     
     checkTabChanges(tabId, changeInfo, tab) {
+//       console.log("checkTabChanges tab id " + tabId + " tab url " + tab.url);
+//       console.log(changeInfo);
       if(typeof changeInfo.url === 'undefined' || tab.url.indexOf('about:') === 0)
         return;
-      let host = new URL(tab.url);
+      let host = new URL(changeInfo.url);
       host = host.hostname.toString();
-      ColoredTabs.colorizeTab(tabId, host);
+      if(host != ColoredTabs.state.tabHost[tabId]) {
+        ColoredTabs.state.tabHost[tabId] = host;
+        ColoredTabs.colorizeTab(tabId, host);
+      }
     },
-    
+    removeTabInfo(tabId, removeInfo) {
+//       console.log("removeTabInfo tab id " + tabId);
+      delete ColoredTabs.state.tabHost[tabId];
+      delete ColoredTabs.state.tabHue[tabId];
+    },
     colorizeAllTabs() {
 //       console.log('colorizeAllTabs() start');
       let css = '';
@@ -105,7 +115,8 @@ var ColoredTabs = {
     },
     
     state: {
-      'tabHue': {},
+      'tabHost': [],
+      'tabHue': [],
       'inited': false,
     },
 }
@@ -120,7 +131,7 @@ async function registerToTST() {
       await browser.runtime.sendMessage(TST_ID, {
         type: "register-self",
         name: self.id,
-        listeningTypes: ["ready", "sidebar-hide", "sidebar-show"],
+        listeningTypes: ["ready", "sidebar-show"],
       });
     } catch(e) {
       // Could not register
@@ -135,7 +146,9 @@ async function handleTSTMessage(message, sender) {
     if(sender.id !== TST_ID) {
         return;
     }
-    
+//     console.log('handleTSTMessage ' + message.type);
+//     console.log(message);
+
     switch (message.type) {
         case "ready":
           registerToTST();
@@ -144,7 +157,7 @@ async function handleTSTMessage(message, sender) {
 //             console.log('TST ready, initializing ColoredTabs');
             ColoredTabs.init();
           } else {
-//             console.log('ColoredTabs already inited');
+//             console.log('ColoredTabs already inited, so call colorizeAllTabs');
             ColoredTabs.colorizeAllTabs();
           }
           break;
