@@ -1,7 +1,13 @@
-Changes in [0.5] (2019-01-06)
+Changes in [0.5] (2019-01-13)
 ============================================================================================
 
  * Speed-up url change detection process.
+
+ * Removed unnecessary <all_urls> permission
+
+ * Optimize performance by removing onCreate event
+
+ * Add handling remove tab event for optimize memory usage
 
 Changes in [0.4] (2019-01-06)
 ============================================================================================

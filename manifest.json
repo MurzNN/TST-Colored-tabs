@@ -3,7 +3,7 @@
     "name": "TST Colored Tabs",
     "short_name": "TSTColoredTabs",
     "description": "Colorize tabs in Tree Style Tab based on hostname.",
-    "version": "0.4.2",
+    "version": "0.5",
     "author": "Alexey Murz Korepov",
     "homepage_url": "https://github.com/MurzNN/tst-colored-tabs",
 
