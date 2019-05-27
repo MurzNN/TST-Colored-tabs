@@ -127,7 +127,7 @@ async function registerToTST() {
       await browser.runtime.sendMessage(TST_ID, {
         type: "register-self",
         name: self.id,
-        listeningTypes: ["ready", "sidebar-show"],
+        listeningTypes: ["ready", "sidebar-show", "permissions-changed"],
       });
     } catch(e) {
       // Could not register
@@ -149,6 +149,7 @@ async function handleTSTMessage(message, sender) {
         case "ready":
           registerToTST();
         case "sidebar-show":
+        case "permissions-changed":
           if(ColoredTabs.state.inited != true) {
 //             console.log('TST ready, initializing ColoredTabs');
             ColoredTabs.init();
