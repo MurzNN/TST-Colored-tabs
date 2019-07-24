@@ -6,11 +6,15 @@ const DEFAULT_SETTINGS = {
   saturation: 60,
   lightness: 70,
   colors: 15,
-  active_saturation: 60,
-  active_lightness: 60,
-  active_bold: true,
-  hover_saturation: 60,
-  hover_lightness: 65,
+  active: {
+    saturation: 60,
+    lightness: 60,
+    bold: true
+  },
+  hover: {
+    saturation: 60,
+    lightness: 65
+  },
 };
 
 var ColoredTabs = {
@@ -56,15 +60,15 @@ var ColoredTabs = {
     colorizeAllTabs() {
 //       console.log('colorizeAllTabs() start');
       let css = '';
-      if(ColoredTabs.settings.active_bold == true) {
+      if(ColoredTabs.settings.active.bold == true) {
         css += '.tab.active .label{font-weight:bold}';
       }
       for(let i = 0; i < 360; i += (360 / ColoredTabs.settings.colors)) {
         let hue = Math.round(i);
         css += `
 .tab.coloredTabsHue` + hue + ` {background-color: hsl(` + hue + `,` + ColoredTabs.settings.saturation + `%,` + ColoredTabs.settings.lightness + `%);}
-.tab.coloredTabsHue` + hue + `.active {background-color: hsl(` + hue + `,` + ColoredTabs.settings.active_saturation + `%,` + ColoredTabs.settings.active_lightness + `%);}
-.tab.coloredTabsHue` + hue + `:hover {background-color: hsl(` + hue + `,` + ColoredTabs.settings.hover_saturation + `%,` + ColoredTabs.settings.hover_lightness + `%);}`;
+.tab.coloredTabsHue` + hue + `.active {background-color: hsl(` + hue + `,` + ColoredTabs.settings.active.saturation + `%,` + ColoredTabs.settings.active.lightness + `%);}
+.tab.coloredTabsHue` + hue + `:hover {background-color: hsl(` + hue + `,` + ColoredTabs.settings.hover.saturation + `%,` + ColoredTabs.settings.hover.lightness + `%);}`;
       }
 //       console.log(css);
      
