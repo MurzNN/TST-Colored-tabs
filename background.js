@@ -6,27 +6,67 @@ const DEFAULT_SETTINGS = {
   saturation: 60,
   lightness: 70,
   colors: 15,
-  active_saturation: 60,
-  active_lightness: 60,
-  active_bold: true,
-  hover_saturation: 60,
-  hover_lightness: 65,
+  activeSaturate: 120,
+  activeBrightness: 120,
+  activeBold: true,
+  hoverSaturate: 110,
+  hoverBrightness: 110,
+  hosts: [
+    { host: 'example.com', regexp: false, color: '#FF7700', disabled: true },
+    { host: '.*\\.google\\..*', regexp: true, color: '#7171FF', disabled: true },
+  ],
 };
 
 var ColoredTabs = {
-    init() {
-      browser.storage.sync.get(DEFAULT_SETTINGS).then(function(settings) {
-//         console.log('init settings');
-        ColoredTabs.settings = settings;
-        ColoredTabs.colorizeAllTabs();
-        browser.tabs.onUpdated.addListener(ColoredTabs.checkTabChanges);
-        browser.tabs.onRemoved.addListener(ColoredTabs.removeTabInfo)
-//         browser.tabs.onCreated.addListener(ColoredTabs.handleCreated);
-        ColoredTabs.state.inited = true;
-//         console.log('init settings fin');
-      });
-    },
-    
+  state: {
+    'inited': false,
+  },
+
+  init() {
+    browser.storage.sync.get().then(function(settingsStored) {
+      ColoredTabs.settings = {}
+      Object.assign(ColoredTabs.settings, DEFAULT_SETTINGS, settingsStored);
+
+      ColoredTabs.state = {
+        'tabsHost': [],
+        'tabsClass': [],
+        'inited': false,
+      };
+          // console.log(ColoredTabs.settings);
+
+      if(ColoredTabs.settings.hosts) {
+        ColoredTabs.settings.hosts.forEach(function(hostsItem) {
+          if(hostsItem.disabled !== true && hostsItem.color.length > 3) {
+            if(hostsItem.regexp == true) {
+              if(ColoredTabs.state.hostsRegexp === undefined) {
+                ColoredTabs.state.hostsRegexp = [];
+                ColoredTabs.state.hostsRegexpColor = [];
+              }
+              ColoredTabs.state.hostsRegexp.push(hostsItem.host);
+              ColoredTabs.state.hostsRegexpColor.push(hostsItem.color);
+            } else {
+              if(ColoredTabs.state.hostsMatch === undefined) {
+                ColoredTabs.state.hostsMatch = [];
+                ColoredTabs.state.hostsMatchColor = [];
+              }
+              ColoredTabs.state.hostsMatch.push(hostsItem.host);
+              ColoredTabs.state.hostsMatchColor.push(hostsItem.color);
+            }
+          }
+        });
+      }
+
+      ColoredTabs.colorizeAllTabs();
+      browser.tabs.onUpdated.addListener(ColoredTabs.checkTabChanges);
+      browser.tabs.onRemoved.addListener(ColoredTabs.removeTabInfo)
+  //         browser.tabs.onCreated.addListener(ColoredTabs.handleCreated);
+
+      // console.log(ColoredTabs.state);
+
+      ColoredTabs.state.inited = true;
+    });
+  },
+
 //     handleCreated(tab) {
 //       console.log("handleCreated tab id " + tab.id + " tab url " + tab.url);
 //       if(tab.url.indexOf('about:') === 0)
@@ -35,86 +75,104 @@ var ColoredTabs = {
 //       host = host.hostname.toString();
 //       ColoredTabs.colorizeTab(tab.id, host);
 //     },
-    
-    checkTabChanges(tabId, changeInfo, tab) {
+
+  checkTabChanges(tabId, changeInfo, tab) {
 //       console.log("checkTabChanges tab id " + tabId + " tab url " + tab.url);
 //       console.log(changeInfo);
-      if(typeof changeInfo.url === 'undefined' || tab.url.indexOf('about:') === 0)
-        return;
-      let host = new URL(changeInfo.url);
-      host = host.hostname.toString();
-      if(host != ColoredTabs.state.tabHost[tabId]) {
-        ColoredTabs.state.tabHost[tabId] = host;
-        ColoredTabs.colorizeTab(tabId, host);
-      }
-    },
-    removeTabInfo(tabId, removeInfo) {
+    if(typeof changeInfo.url === 'undefined' || tab.url.indexOf('about:') === 0)
+      return;
+    let host = new URL(changeInfo.url);
+    host = host.hostname.toString();
+    if(host != ColoredTabs.state.tabsHost[tabId]) {
+      ColoredTabs.state.tabsHost[tabId] = host;
+      ColoredTabs.colorizeTab(tabId, host);
+    }
+  },
+  removeTabInfo(tabId, removeInfo) {
 //       console.log("removeTabInfo tab id " + tabId);
-      delete ColoredTabs.state.tabHost[tabId];
-      delete ColoredTabs.state.tabHue[tabId];
-    },
-    colorizeAllTabs() {
+    delete ColoredTabs.state.tabsHost[tabId];
+    delete ColoredTabs.state.tabsClass[tabId];
+  },
+  colorizeAllTabs() {
 //       console.log('colorizeAllTabs() start');
-      let css = '';
-      if(ColoredTabs.settings.active_bold == true) {
-        css += '.tab.active .label{font-weight:bold}';
-      }
-      for(let i = 0; i < 360; i += (360 / ColoredTabs.settings.colors)) {
-        let hue = Math.round(i);
-        css += `
-.tab.coloredTabsHue` + hue + ` {background-color: hsl(` + hue + `,` + ColoredTabs.settings.saturation + `%,` + ColoredTabs.settings.lightness + `%);}
-.tab.coloredTabsHue` + hue + `.active {background-color: hsl(` + hue + `,` + ColoredTabs.settings.active_saturation + `%,` + ColoredTabs.settings.active_lightness + `%);}
-.tab.coloredTabsHue` + hue + `:hover {background-color: hsl(` + hue + `,` + ColoredTabs.settings.hover_saturation + `%,` + ColoredTabs.settings.hover_lightness + `%);}`;
-      }
-//       console.log(css);
-     
-      browser.runtime.sendMessage(TST_ID, {
-          type: "register-self",
-          style: css,
-      });
-      
-      browser.tabs.query({}).then(function(tabs){
-        for (let tab of tabs) {
-          let host = new URL(tab.url);
-          host = host.hostname.toString();
+    let css = `
+.tab.active {filter: saturate(` + ColoredTabs.settings.activeSaturate + `%) brightness(` + ColoredTabs.settings.activeBrightness + `%);}
+.tab:hover {filter: saturate(` + ColoredTabs.settings.hoverSaturate + `%) brightness(` + ColoredTabs.settings.hoverBrightness + `%);}`;
+
+    if(ColoredTabs.settings.activeBold == true) {
+      css += '.tab.active .label{font-weight:bold}';
+    }
+
+    for(let i = 0; i < 360; i += (360 / ColoredTabs.settings.colors)) {
+      let hue = Math.round(i);
+      css += `.tab.coloredTabsHue` + hue + ` {background-color: hsl(` + hue + `,` + ColoredTabs.settings.saturation + `%,` + ColoredTabs.settings.lightness + `%);}`;
+    }
+
+    if(ColoredTabs.state.hostsMatchColor !== undefined) {
+      ColoredTabs.state.hostsMatchColor.forEach((element, index) => css += `.tab.coloredTabsHostMatch` + index + ` {background-color: ` + element + `;}`);
+    }
+    if(ColoredTabs.state.hostsRegexpColor !== undefined) {
+      ColoredTabs.state.hostsRegexpColor.forEach((element, index) => css += `.tab.coloredTabsHostRegexp` + index + ` {background-color: ` + element + `;}`);
+    }
+    // console.log(css);
+
+    browser.runtime.sendMessage(TST_ID, {
+        type: "register-self",
+        style: css,
+    });
+
+    browser.tabs.query({}).then(function(tabs){
+      for (let tab of tabs) {
+        let host = new URL(tab.url);
+        host = host.hostname.toString();
 //           console.log('colorize tab id ' + tab.id + ' host ' + host);
-          ColoredTabs.colorizeTab(tab.id, host);
-        }
-      }, onError);
-    },
-    
-    colorizeTab(tabId, host) {
-      let hue = Math.round((ColoredTabs.hash(host) % ColoredTabs.settings.colors) * (360 / ColoredTabs.settings.colors));
-//       console.log("colorizeTab tabId " + tabId + ", host " + host + " hash " + ColoredTabs.hash(host) + " step " + (ColoredTabs.hash(host) % ColoredTabs.settings.colors) + " hue " + hue);
-      
-      if(ColoredTabs.state.tabHue[tabId] != hue) {
-        browser.runtime.sendMessage(TST_ID, {
-          type:  'add-tab-state',
-          tabs:  [tabId],
-          state: 'coloredTabsHue' + hue,
-        });
-        if(typeof ColoredTabs.state.tabHue[tabId] !== 'undefined') {
-          browser.runtime.sendMessage(TST_ID, {
-            type:  'remove-tab-state',
-            tabs:  [tabId],
-            state: 'coloredTabsHue' + ColoredTabs.state.tabHue[tabId],
-          });
-        }
-        ColoredTabs.state.tabHue[tabId] = hue;
+        ColoredTabs.colorizeTab(tab.id, host);
       }
-    },
-    
-    hash(s) {
-      for(var i=0, h=1; i<s.length; i++)
-        h=Math.imul(h+s.charCodeAt(i)|0, 2654435761);
-      return (h^h>>>17)>>>0;
-    },
-    
-    state: {
-      'tabHost': [],
-      'tabHue': [],
-      'inited': false,
-    },
+    }, onError);
+  },
+
+  colorizeTab(tabId, host) {
+    let tabClass = null;
+    let index = null;
+    if ((ColoredTabs.state.hostsMatch !== undefined) && (index = ColoredTabs.state.hostsMatch.indexOf(host) > -1)) {
+      tabClass = 'coloredTabsHostMatch' + ColoredTabs.state.hostsMatch.indexOf(host);
+    } else if (ColoredTabs.state.hostsRegexp !== undefined) {
+      for (let i = 0; i < ColoredTabs.state.hostsRegexp.length; i++) {
+        if(host.match(ColoredTabs.state.hostsRegexp[i])) {
+          tabClass = 'coloredTabsHostRegexp' + i;
+          break;
+        }
+      }
+    }
+    if(tabClass === null) {
+      tabClass = 'coloredTabsHue' + Math.round((ColoredTabs.hash(host) % ColoredTabs.settings.colors) * (360 / ColoredTabs.settings.colors));
+    }
+
+    // console.log("colorizeTab tabId " + tabId + ", host " + host + " hash " + ColoredTabs.hash(host) + " step " + (ColoredTabs.hash(host) % ColoredTabs.settings.colors) + " tabClass " + tabClass);
+
+    if(ColoredTabs.state.tabsClass[tabId] != tabClass) {
+      browser.runtime.sendMessage(TST_ID, {
+        type:  'add-tab-state',
+        tabs:  [tabId],
+        state: tabClass,
+      });
+      if(typeof ColoredTabs.state.tabsClass[tabId] !== undefined) {
+        browser.runtime.sendMessage(TST_ID, {
+          type:  'remove-tab-state',
+          tabs:  [tabId],
+          state: ColoredTabs.state.tabsClass[tabId],
+        });
+      }
+      ColoredTabs.state.tabsClass[tabId] = tabClass;
+    }
+  },
+
+  hash(s) {
+    for(var i=0, h=1; i<s.length; i++)
+      h=Math.imul(h+s.charCodeAt(i)|0, 2654435761);
+    return (h^h>>>17)>>>0;
+  },
+
 }
 
 function onError(error) {
@@ -148,6 +206,7 @@ async function handleTSTMessage(message, sender) {
     switch (message.type) {
         case "ready":
           registerToTST();
+          ColoredTabs.init();
         case "sidebar-show":
         case "permissions-changed":
           if(ColoredTabs.state.inited != true) {
@@ -160,6 +219,7 @@ async function handleTSTMessage(message, sender) {
           break;
     }
 }
+
 
 registerToTST();
 browser.runtime.onMessageExternal.addListener(handleTSTMessage);

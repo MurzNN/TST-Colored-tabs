@@ -1,3 +1,16 @@
+Changes in [0.7] (2020-03-23)
+============================================================================================
+
+ * Implemented setting per-host colors via direct match and regexp
+
+ * Implemented re-applying colors after main TST extension upgrade
+
+ * Fixed issue with lost settings when saving
+
+ * Replaced active and hover tabs tint to filter saturation and brigtness of original color
+
+ * Some other code refactor for improve speed and stability
+
 Changes in [0.6] (2019-05-27)
 ============================================================================================
 
@@ -32,9 +45,9 @@ Changes in [0.2] (2019-01-05)
 ============================================================================================
 
  * Colorize all tabs on extension initialization.
- 
+
  * Fixed bug with not changing tab color when return to old domain.
- 
+
  * Added Options page with default options
 
  * Allow customize CSS styles for all tabs, active and hovered tabs.
