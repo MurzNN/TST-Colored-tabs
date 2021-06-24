@@ -105,7 +105,20 @@ var ColoredTabs = {
 
     for(let i = 0; i < 360; i += (360 / ColoredTabs.settings.colors)) {
       let hue = Math.round(i);
-      css += `.tab.coloredTabsHue` + hue + ` {background-color: hsl(` + hue + `,` + ColoredTabs.settings.saturation + `%,` + ColoredTabs.settings.lightness + `%);}`;
+
+      css += `
+.tab.coloredTabsHue${hue} {
+  --tst-color-tabs-bg-hue: ${hue};
+  --tst-color-tabs-bg-saturation: ${ColoredTabs.settings.saturation}%;
+  --tst-color-tabs-bg-lightness: ${ColoredTabs.settings.lightness}%;
+  --tst-color-tabs-bg-color: hsl(
+    var(--tst-colortabs-bg-hue), 
+    var(--tst-color-tabs-bg-saturation),
+    var(--tst-color-tabs-bg-lightness)
+  );
+
+  background-color: var(--tst-color-tabs-bg-color);
+}`;
     }
 
     if(ColoredTabs.state.hostsMatchColor !== undefined) {
