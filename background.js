@@ -112,7 +112,7 @@ var ColoredTabs = {
   --tst-color-tabs-bg-saturation: ${ColoredTabs.settings.saturation}%;
   --tst-color-tabs-bg-lightness: ${ColoredTabs.settings.lightness}%;
   --tst-color-tabs-bg-color: hsl(
-    var(--tst-colortabs-bg-hue), 
+    var(--tst-color-tabs-bg-hue), 
     var(--tst-color-tabs-bg-saturation),
     var(--tst-color-tabs-bg-lightness)
   );
