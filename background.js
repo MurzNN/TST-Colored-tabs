@@ -96,23 +96,23 @@ var ColoredTabs = {
   colorizeAllTabs() {
 //       console.log('colorizeAllTabs() start');
     let css = `
-.tab.active {filter: saturate(` + ColoredTabs.settings.activeSaturate + `%) brightness(` + ColoredTabs.settings.activeBrightness + `%);}
-.tab:hover {filter: saturate(` + ColoredTabs.settings.hoverSaturate + `%) brightness(` + ColoredTabs.settings.hoverBrightness + `%);}`;
+tab-item.active tab-item-substance {filter: saturate(` + ColoredTabs.settings.activeSaturate + `%) brightness(` + ColoredTabs.settings.activeBrightness + `%);}
+tab-item tab-item-substance:hover {filter: saturate(` + ColoredTabs.settings.hoverSaturate + `%) brightness(` + ColoredTabs.settings.hoverBrightness + `%);}`;
 
     if(ColoredTabs.settings.activeBold == true) {
-      css += '.tab.active .label{font-weight:bold}';
+      css += 'tab-item.active .label{font-weight:bold}';
     }
 
     for(let i = 0; i < 360; i += (360 / ColoredTabs.settings.colors)) {
       let hue = Math.round(i);
-      css += `.tab.coloredTabsHue` + hue + ` {background-color: hsl(` + hue + `,` + ColoredTabs.settings.saturation + `%,` + ColoredTabs.settings.lightness + `%);}`;
+      css += `tab-item.coloredTabsHue` + hue + ` tab-item-substance {background-color: hsl(` + hue + `,` + ColoredTabs.settings.saturation + `%,` + ColoredTabs.settings.lightness + `%);}`;
     }
 
     if(ColoredTabs.state.hostsMatchColor !== undefined) {
-      ColoredTabs.state.hostsMatchColor.forEach((element, index) => css += `.tab.coloredTabsHostMatch` + index + ` {background-color: ` + element + `;}`);
+      ColoredTabs.state.hostsMatchColor.forEach((element, index) => css += `tab-item.coloredTabsHostMatch` + index + ` tab-item-substance {background-color: ` + element + `;}`);
     }
     if(ColoredTabs.state.hostsRegexpColor !== undefined) {
-      ColoredTabs.state.hostsRegexpColor.forEach((element, index) => css += `.tab.coloredTabsHostRegexp` + index + ` {background-color: ` + element + `;}`);
+      ColoredTabs.state.hostsRegexpColor.forEach((element, index) => css += `tab-item.coloredTabsHostRegexp` + index + ` tab-item-substance {background-color: ` + element + `;}`);
     }
     // console.log(css);
 
